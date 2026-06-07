@@ -129,8 +129,8 @@ func TestLDIR(t *testing.T) {
 func TestPushPop(t *testing.T) {
 	c := newCPU([]byte{
 		0x01, 0x34, 0x12, // LD BC, 0x1234
-		0xC5,             // PUSH BC
-		0xD1,             // POP DE
+		0xC5, // PUSH BC
+		0xD1, // POP DE
 	})
 	c.SP = 0xF000
 	c.Step()

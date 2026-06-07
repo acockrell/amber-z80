@@ -1,5 +1,7 @@
 # amber-z80
 
+[![CI](https://github.com/acockrell/amber-z80/actions/workflows/ci.yml/badge.svg)](https://github.com/acockrell/amber-z80/actions/workflows/ci.yml)
+
 A Zilog Z80 CPU emulator in Go. Cycle-accurate, instruction-faithful, and validated against the standard test suite.
 
 Originally extracted from the [amber](https://github.com/acockrell/amber) CP/M 3.0 emulator.
@@ -79,6 +81,18 @@ cd amber && make zexall
 ```
 
 Expect roughly 10 minutes to complete all 67 tests.
+
+## Development
+
+```sh
+make test         # unit tests
+make test-race    # tests with -race
+make lint         # golangci-lint
+make cover-html   # coverage report
+make bench        # benchmarks
+```
+
+CI runs `go vet`, `go test -race -coverprofile`, and `golangci-lint` on every push.
 
 ## Layout
 

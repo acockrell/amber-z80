@@ -63,14 +63,14 @@ func New(mem Memory) *CPU {
 }
 
 // Register pair accessors
-func (c *CPU) AF() uint16        { return uint16(c.A)<<8 | uint16(c.F) }
-func (c *CPU) SetAF(v uint16)    { c.A = byte(v >> 8); c.F = byte(v) }
-func (c *CPU) BC() uint16        { return uint16(c.B)<<8 | uint16(c.C) }
-func (c *CPU) SetBC(v uint16)    { c.B = byte(v >> 8); c.C = byte(v) }
-func (c *CPU) DE() uint16        { return uint16(c.D)<<8 | uint16(c.E) }
-func (c *CPU) SetDE(v uint16)    { c.D = byte(v >> 8); c.E = byte(v) }
-func (c *CPU) HL() uint16        { return uint16(c.H)<<8 | uint16(c.L) }
-func (c *CPU) SetHL(v uint16)    { c.H = byte(v >> 8); c.L = byte(v) }
+func (c *CPU) AF() uint16     { return uint16(c.A)<<8 | uint16(c.F) }
+func (c *CPU) SetAF(v uint16) { c.A = byte(v >> 8); c.F = byte(v) }
+func (c *CPU) BC() uint16     { return uint16(c.B)<<8 | uint16(c.C) }
+func (c *CPU) SetBC(v uint16) { c.B = byte(v >> 8); c.C = byte(v) }
+func (c *CPU) DE() uint16     { return uint16(c.D)<<8 | uint16(c.E) }
+func (c *CPU) SetDE(v uint16) { c.D = byte(v >> 8); c.E = byte(v) }
+func (c *CPU) HL() uint16     { return uint16(c.H)<<8 | uint16(c.L) }
+func (c *CPU) SetHL(v uint16) { c.H = byte(v >> 8); c.L = byte(v) }
 
 // fetch reads the byte at PC and increments PC.
 func (c *CPU) fetch() byte {
@@ -227,51 +227,5 @@ func (c *CPU) writeReg(r, val byte) {
 		c.Mem.Write(c.HL(), val)
 	case 7:
 		c.A = val
-	}
-}
-
-// readReg16 returns a 16-bit register pair by index (0=BC,1=DE,2=HL,3=SP).
-func (c *CPU) readReg16(rr byte) uint16 {
-	switch rr {
-	case 0:
-		return c.BC()
-	case 1:
-		return c.DE()
-	case 2:
-		return c.HL()
-	case 3:
-		return c.SP
-	}
-	return 0
-}
-
-// writeReg16 writes a 16-bit register pair.
-func (c *CPU) writeReg16(rr byte, val uint16) {
-	switch rr {
-	case 0:
-		c.SetBC(val)
-	case 1:
-		c.SetDE(val)
-	case 2:
-		c.SetHL(val)
-	case 3:
-		c.SP = val
-	}
-}
-
-// readReg16AF is like readReg16 but uses AF instead of SP for index 3.
-func (c *CPU) readReg16AF(rr byte) uint16 {
-	if rr == 3 {
-		return c.AF()
-	}
-	return c.readReg16(rr)
-}
-
-// writeReg16AF is like writeReg16 but uses AF instead of SP for index 3.
-func (c *CPU) writeReg16AF(rr byte, val uint16) {
-	if rr == 3 {
-		c.SetAF(val)
-	} else {
-		c.writeReg16(rr, val)
 	}
 }

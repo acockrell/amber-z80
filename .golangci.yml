@@ -1,0 +1,34 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: none
+  enable:
+    - govet
+    - staticcheck
+    - revive
+    - ineffassign
+    - unused
+    - gocritic
+    - misspell
+  settings:
+    gocritic:
+      disabled-checks:
+        - ifElseChain
+        - singleCaseSwitch
+    revive:
+      rules:
+        - name: var-naming
+          disabled: true
+  exclusions:
+    rules:
+      - path: opcodes(_cb|_dd|_ed|_fd)?\.go
+        linters:
+          - gocritic
+          - revive
+
+formatters:
+  enable:
+    - gofmt

@@ -73,17 +73,30 @@ cpu.INT()   // maskable; honours IFF1 and IM 0/1/2
 
 ## Validation
 
-A standalone runner under `cmd/zexall` executes any CP/M `.com` test binary
-(ZEXALL, ZEXDOC, PRELIM, …) against the core with a minimal BDOS console stub:
+ZEXDOC and ZEXALL are Frank Cringle's Z80 instruction exercisers, originally
+written for his YAZE Z80 emulator and ported to CP/M by J.G. Harston.
+They are distributed under the GNU General Public License. Source and
+pre-assembled binaries are available at
+[mdfs.net/Software/Z80/Exerciser](https://mdfs.net/Software/Z80/Exerciser/).
+ZEXDOC tests documented behaviour; ZEXALL additionally covers undocumented
+opcodes and flag bits. Both binaries are vendored under `testdata/`.
+
+CI runs them automatically:
+
+| Suite  | When           | Duration | Coverage                        |
+|--------|----------------|----------|---------------------------------|
+| ZEXDOC | every PR       | ~3 min   | all documented instructions     |
+| ZEXALL | push to `main` | ~10 min  | documented + undocumented       |
+
+To run locally:
 
 ```sh
-go run ./cmd/zexall path/to/zexall.com
+go run ./cmd/zexall testdata/zexdoc.com   # fast
+go run ./cmd/zexall testdata/zexall.com   # full
 ```
 
-Expect roughly 10 minutes for full ZEXALL (67 tests). ZEXDOC is ~3 minutes.
-
-ZEXALL is also exercised end-to-end via the parent
-[amber](https://github.com/acockrell/amber) CP/M 3.0 emulator.
+The runner accepts any CP/M `.com` binary with a minimal BDOS console stub
+(functions 2 and 9). It exits 1 if any test reports errors.
 
 ## Development
 
@@ -95,7 +108,7 @@ make cover-html   # coverage report
 make bench        # benchmarks
 ```
 
-CI runs `go vet`, `go test -race -coverprofile`, and `golangci-lint` on every push.
+CI runs `go vet`, `go test -race -coverprofile`, `golangci-lint`, and ZEXDOC/ZEXALL on every push and PR.
 
 ## Layout
 

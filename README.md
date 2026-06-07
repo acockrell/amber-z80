@@ -73,14 +73,17 @@ cpu.INT()   // maskable; honours IFF1 and IM 0/1/2
 
 ## Validation
 
-ZEXALL is run via the parent [amber](https://github.com/acockrell/amber) emulator, which provides the CP/M BDOS console plumbing the test binary needs:
+A standalone runner under `cmd/zexall` executes any CP/M `.com` test binary
+(ZEXALL, ZEXDOC, PRELIM, …) against the core with a minimal BDOS console stub:
 
 ```sh
-git clone https://github.com/acockrell/amber
-cd amber && make zexall
+go run ./cmd/zexall path/to/zexall.com
 ```
 
-Expect roughly 10 minutes to complete all 67 tests.
+Expect roughly 10 minutes for full ZEXALL (67 tests). ZEXDOC is ~3 minutes.
+
+ZEXALL is also exercised end-to-end via the parent
+[amber](https://github.com/acockrell/amber) CP/M 3.0 emulator.
 
 ## Development
 

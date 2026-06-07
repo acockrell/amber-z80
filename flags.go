@@ -68,7 +68,7 @@ func (c *CPU) adc8(val byte) {
 		carry = 1
 	}
 	result := uint16(c.A) + uint16(val) + carry
-	hcarry := (c.A&0x0F) + (val&0x0F) + byte(carry)
+	hcarry := (c.A & 0x0F) + (val & 0x0F) + byte(carry)
 	c.setFlag(FlagH, hcarry > 0x0F)
 	c.setFlag(FlagC, result > 0xFF)
 	c.setFlag(FlagN, false)

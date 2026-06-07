@@ -73,7 +73,11 @@ cpu.INT()   // maskable; honours IFF1 and IM 0/1/2
 
 ## Validation
 
-ZEXDOC and ZEXALL are Frank Cringle's public domain Z80 instruction exercisers.
+ZEXDOC and ZEXALL are Frank Cringle's Z80 instruction exercisers, originally
+written for his YAZE Z80 emulator and ported to CP/M by J.G. Harston.
+They are distributed under the GNU General Public License. Source and
+pre-assembled binaries are available at
+[mdfs.net/Software/Z80/Exerciser](https://mdfs.net/Software/Z80/Exerciser/).
 ZEXDOC tests documented behaviour; ZEXALL additionally covers undocumented
 opcodes and flag bits. Both binaries are vendored under `testdata/`.
 

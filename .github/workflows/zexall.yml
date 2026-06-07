@@ -1,0 +1,39 @@
+name: ZEXALL
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  zexdoc:
+    name: ZEXDOC (documented opcodes)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Run ZEXDOC
+        run: go run ./cmd/zexall testdata/zexdoc.com
+
+  zexall:
+    name: ZEXALL (all opcodes)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Run ZEXALL
+        run: go run ./cmd/zexall testdata/zexall.com

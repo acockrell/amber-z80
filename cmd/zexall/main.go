@@ -1,13 +1,21 @@
 // Command zexall runs a CP/M .com binary (ZEXALL, ZEXDOC, PRELIM, etc.) against
-// the z80 core with a minimal BDOS console stub. Exit code is 0 on clean
-// termination (warm boot / HALT), 1 on harness error.
+// the z80 core with a minimal BDOS console stub.
+//
+// Exit codes:
+//
+//	0  all tests passed (or binary terminated cleanly with no error lines)
+//	1  one or more tests reported errors, or harness error
+//	2  bad arguments
 //
 //	go run ./cmd/zexall path/to/zexall.com
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
+	"regexp"
 	"time"
 
 	z80 "github.com/acockrell/amber-z80"
@@ -18,6 +26,9 @@ const (
 	wbootEntry = 0x0000
 	loadAddr   = 0x0100
 )
+
+// errLine matches lines like "ld <bcdehla>,<bcdehla>....  3 errors"
+var errLine = regexp.MustCompile(`\b[1-9]\d* errors?\b`)
 
 type ram [65536]byte
 
@@ -54,6 +65,10 @@ func main() {
 	c.PC = loadAddr
 	c.SP = 0xF000
 
+	// Tee output: write to stdout live and capture for error scanning.
+	var buf bytes.Buffer
+	out := io.MultiWriter(os.Stdout, &buf)
+
 	start := time.Now()
 	var steps uint64
 
@@ -62,10 +77,10 @@ func main() {
 		case bdosEntry:
 			switch c.C {
 			case 2: // C_WRITE — print char in E
-				os.Stdout.Write([]byte{c.E})
+				out.Write([]byte{c.E})
 			case 9: // C_WRITESTR — print $-terminated string at DE
 				for a := c.DE(); mem.Read(a) != '$'; a++ {
-					os.Stdout.Write([]byte{mem.Read(a)})
+					out.Write([]byte{mem.Read(a)})
 				}
 			}
 		case wbootEntry:
@@ -79,4 +94,8 @@ func main() {
 	fmt.Fprintf(os.Stderr, "\n[%d steps, %d t-states, %s, ~%.1f MHz equivalent]\n",
 		steps, c.Cycles, elapsed.Round(time.Millisecond),
 		float64(c.Cycles)/elapsed.Seconds()/1e6)
+
+	if errLine.Match(buf.Bytes()) {
+		os.Exit(1)
+	}
 }

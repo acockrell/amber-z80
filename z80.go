@@ -55,6 +55,8 @@ type CPU struct {
 	Cycles uint64
 }
 
+// New returns a CPU connected to mem with I/O ports defaulting to no-ops.
+// Set [CPU.In], [CPU.Out], and [CPU.PC] before calling [CPU.Step].
 func New(mem Memory) *CPU {
 	c := &CPU{Mem: mem}
 	c.In = func(port uint16) byte { return 0xFF }
@@ -62,14 +64,28 @@ func New(mem Memory) *CPU {
 	return c
 }
 
-// Register pair accessors
-func (c *CPU) AF() uint16     { return uint16(c.A)<<8 | uint16(c.F) }
+// AF returns the AF register pair (A in the high byte, F in the low byte).
+func (c *CPU) AF() uint16 { return uint16(c.A)<<8 | uint16(c.F) }
+
+// SetAF sets the AF register pair.
 func (c *CPU) SetAF(v uint16) { c.A = byte(v >> 8); c.F = byte(v) }
-func (c *CPU) BC() uint16     { return uint16(c.B)<<8 | uint16(c.C) }
+
+// BC returns the BC register pair.
+func (c *CPU) BC() uint16 { return uint16(c.B)<<8 | uint16(c.C) }
+
+// SetBC sets the BC register pair.
 func (c *CPU) SetBC(v uint16) { c.B = byte(v >> 8); c.C = byte(v) }
-func (c *CPU) DE() uint16     { return uint16(c.D)<<8 | uint16(c.E) }
+
+// DE returns the DE register pair.
+func (c *CPU) DE() uint16 { return uint16(c.D)<<8 | uint16(c.E) }
+
+// SetDE sets the DE register pair.
 func (c *CPU) SetDE(v uint16) { c.D = byte(v >> 8); c.E = byte(v) }
-func (c *CPU) HL() uint16     { return uint16(c.H)<<8 | uint16(c.L) }
+
+// HL returns the HL register pair.
+func (c *CPU) HL() uint16 { return uint16(c.H)<<8 | uint16(c.L) }
+
+// SetHL sets the HL register pair.
 func (c *CPU) SetHL(v uint16) { c.H = byte(v >> 8); c.L = byte(v) }
 
 // fetch reads the byte at PC and increments PC.
@@ -112,6 +128,10 @@ func (c *CPU) pop() uint16 {
 }
 
 // Step executes one instruction and returns the number of T-states consumed.
+// If the CPU is halted it returns 4 without advancing PC (the real Z80
+// repeatedly executes NOP internally while halted; call [CPU.NMI] or
+// [CPU.INT] to resume). Step does not update [CPU.Cycles]; callers that need
+// a running total should add the return value themselves, or use [CPU.Run].
 func (c *CPU) Step() int {
 	if c.Halted {
 		return 4
@@ -128,6 +148,8 @@ func (c *CPU) Step() int {
 }
 
 // Run executes instructions until the halt channel receives a signal.
+// It accumulates T-states into [CPU.Cycles]. For finer-grained control
+// (mid-scanline interrupts, contention) use [CPU.Step] directly.
 func (c *CPU) Run(halt <-chan struct{}) {
 	for {
 		select {
@@ -139,7 +161,8 @@ func (c *CPU) Run(halt <-chan struct{}) {
 	}
 }
 
-// Reset resets the CPU to power-on state.
+// Reset resets the CPU to power-on state: PC=0, SP=0xFFFF, A=0xFF, F=0xFF,
+// interrupts disabled, IM 0, Halted false, Cycles 0.
 func (c *CPU) Reset() {
 	c.PC = 0
 	c.SP = 0xFFFF
@@ -154,7 +177,9 @@ func (c *CPU) Reset() {
 	c.Cycles = 0
 }
 
-// NMI triggers a non-maskable interrupt.
+// NMI triggers a non-maskable interrupt. IFF1 is saved to IFF2, IFF1 is
+// cleared, the return address is pushed, and PC jumps to 0x0066. If the CPU
+// is halted it resumes. Costs 11 T-states.
 func (c *CPU) NMI() {
 	c.Halted = false
 	c.IFF2 = c.IFF1
@@ -164,7 +189,12 @@ func (c *CPU) NMI() {
 	c.Cycles += 11
 }
 
-// INT triggers a maskable interrupt (mode 1: RST 38h).
+// INT triggers a maskable interrupt. It is ignored if IFF1 is false.
+// Both IFF1 and IFF2 are cleared. Behaviour by mode:
+//   - IM 0/1: push PC, jump to 0x0038 (13 T-states)
+//   - IM 2: push PC, read vector from (I<<8 | 0xFF), jump there (19 T-states)
+//
+// If the CPU is halted it resumes before the interrupt is serviced.
 func (c *CPU) INT() {
 	if !c.IFF1 {
 		return

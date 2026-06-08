@@ -3,8 +3,20 @@ name: ZEXALL
 on:
   pull_request:
     branches: [main]
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - 'testdata/*.com'
+      - '.github/workflows/zexall.yml'
   push:
     branches: [main]
+    paths:
+      - '**.go'
+      - 'go.mod'
+      - 'go.sum'
+      - 'testdata/*.com'
+      - '.github/workflows/zexall.yml'
 
 permissions:
   contents: read

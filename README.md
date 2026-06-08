@@ -1,6 +1,7 @@
 # amber-z80
 
 [![CI](https://github.com/acockrell/amber-z80/actions/workflows/ci.yml/badge.svg)](https://github.com/acockrell/amber-z80/actions/workflows/ci.yml)
+[![ZEXALL](https://github.com/acockrell/amber-z80/actions/workflows/zexall.yml/badge.svg)](https://github.com/acockrell/amber-z80/actions/workflows/zexall.yml)
 
 A Zilog Z80 CPU emulator in Go. Cycle-accurate, instruction-faithful, and validated against the standard test suite.
 
@@ -108,16 +109,19 @@ make cover-html   # coverage report
 make bench        # benchmarks
 ```
 
-CI runs `go vet`, `go test -race -coverprofile`, `golangci-lint`, and ZEXDOC/ZEXALL on every push and PR.
+CI runs `go vet`, `go test -race -coverprofile`, `golangci-lint`, and ZEXDOC/ZEXALL when Go source, module files, or workflow configs change.
 
 ## Layout
 
 ```
-z80.go         CPU struct, registers, fetch/push/pop, Step, NMI, INT
-flags.go       F register helpers and SZ53 lookup
-opcodes.go     primary instruction table (0x00–0xFF except prefix bytes)
-opcodes_cb.go  CB-prefix: rotates, shifts, BIT/SET/RES
-opcodes_dd.go  DD-prefix: IX-indexed instructions
-opcodes_ed.go  ED-prefix: extended ops (block moves, I/O, IM, etc.)
-opcodes_fd.go  FD-prefix: IY-indexed instructions
+doc.go             package-level documentation
+z80.go             CPU struct, registers, fetch/push/pop, Step, NMI, INT
+flags.go           F register helpers and SZ53 lookup
+opcodes.go         primary instruction table (0x00–0xFF except prefix bytes)
+opcodes_cb.go      CB-prefix: rotates, shifts, BIT/SET/RES
+opcodes_dd.go      DD-prefix: IX-indexed instructions
+opcodes_ed.go      ED-prefix: extended ops (block moves, I/O, IM, etc.)
+opcodes_fd.go      FD-prefix: IY-indexed instructions
+cmd/zexall/        standalone CP/M test runner (ZEXALL, ZEXDOC, PRELIM, …)
+testdata/          vendored ZEXALL and ZEXDOC binaries
 ```
